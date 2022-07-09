@@ -5,6 +5,8 @@ from transformers import BertTokenizer, GPT2LMHeadModel
 import torch
 import torch.nn.functional as F
 
+from filter import Filter
+
 class ChatBot():
 
   def get_chat_bot(pretrained_model):
@@ -65,21 +67,25 @@ class ChatBot():
     input_ids = input_ids.unsqueeze(0)
 
     answer = []
-    for _ in range(25):
-      output = self.model(input_ids)
+    while True:
+      for _ in range(25):
+        output = self.model(input_ids)
 
-      logits = output.logits
-      next_token_logits = logits[0, -1, :]
-      for id in set(answer):
-        next_token_logits[id] /= repetition_penalty
-      next_token_logits = next_token_logits / temperature
-      next_token_logits[self.tokenizer.convert_tokens_to_ids('[UNK]')] = -float('Inf')
-      filtered_logits = self.__top_k_top_p_filtering(next_token_logits, top_k=top_k, top_p=top_p)
-      next_token = torch.multinomial(F.softmax(filtered_logits, dim=-1), num_samples=1)
-      if next_token == self.tokenizer.sep_token_id:
+        logits = output.logits
+        next_token_logits = logits[0, -1, :]
+        for id in set(answer):
+          next_token_logits[id] /= repetition_penalty
+        next_token_logits = next_token_logits / temperature
+        next_token_logits[self.tokenizer.convert_tokens_to_ids('[UNK]')] = -float('Inf')
+        filtered_logits = self.__top_k_top_p_filtering(next_token_logits, top_k=top_k, top_p=top_p)
+        next_token = torch.multinomial(F.softmax(filtered_logits, dim=-1), num_samples=1)
+        if next_token == self.tokenizer.sep_token_id:
+          break
+        input_ids = torch.cat((input_ids, next_token.unsqueeze(0)), dim=1)
+        answer.append(next_token.item())
+
+      if not Filter.filter(answer):
         break
-      input_ids = torch.cat((input_ids, next_token.unsqueeze(0)), dim=1)
-      answer.append(next_token.item())
 
     history.append(answer)
 
