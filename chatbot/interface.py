@@ -1,6 +1,6 @@
 
 
-from transformers import BertTokenizer, GPT2LMHeadModel
+from transformers import BertTokenizerFast, GPT2LMHeadModel
 
 import torch
 import torch.nn.functional as F
@@ -9,10 +9,13 @@ from chatbot.filter import Filter
 
 class ChatBot():
 
-  def get_chat_bot(pretrained_model):
+  def get_chat_bot(model_path, vocab_path = None):
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    tokenizer = BertTokenizer.from_pretrained(pretrained_model)
-    model = GPT2LMHeadModel.from_pretrained(pretrained_model)
+    if vocab_path is None:
+      tokenizer = BertTokenizerFast.from_pretrained(model_path, sep_token="[SEP]", pad_token="[PAD]", cls_token="[CLS]")
+    else:
+      tokenizer = BertTokenizerFast(vocab_path, sep_token="[SEP]", pad_token="[PAD]", cls_token="[CLS]")
+    model = GPT2LMHeadModel.from_pretrained(model_path)
     model.to(device)
     model.eval()
 
