@@ -5,7 +5,7 @@ from transformers import BertTokenizer, GPT2LMHeadModel
 import torch
 import torch.nn.functional as F
 
-from filter import Filter
+from chatbot.filter import Filter
 
 class ChatBot():
 
