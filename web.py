@@ -16,9 +16,9 @@ bot = None
 def set_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--temperature', default=1, type=float, required=False, help='生成的temperature')
-    parser.add_argument('--repetition_penalty', default=1.0, type=float, required=False, help="重复惩罚参数，若生成的对话重复性较高，可适当提高该参数")
-    parser.add_argument('--topk', default=8, type=int, required=False, help='最高k选1')
-    parser.add_argument('--topp', default=0, type=float, required=False, help='最高积累概率')
+    parser.add_argument('--repetition_penalty', default=1.2, type=float, required=False, help="重复惩罚参数，若生成的对话重复性较高，可适当提高该参数")
+    parser.add_argument('--topk', default=6, type=int, required=False, help='最高k选1')
+    parser.add_argument('--topp', default=0.6, type=float, required=False, help='最高积累概率')
     parser.add_argument('--vocab_path', default=None, type=str, required=False, help='选择词库')
     parser.add_argument('--model_path', default='cambridgeltl/simctg_lccc_dialogue', type=str, required=False, help='对话模型路径')
 

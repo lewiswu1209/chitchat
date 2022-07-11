@@ -15,6 +15,7 @@ class ChatBot():
       tokenizer = BertTokenizerFast.from_pretrained(model_path, sep_token="[SEP]", pad_token="[PAD]", cls_token="[CLS]")
     else:
       tokenizer = BertTokenizerFast(vocab_path, sep_token="[SEP]", pad_token="[PAD]", cls_token="[CLS]")
+    tokenizer.add_special_tokens( {'additional_special_tokens':["[NAME]","[NICK]","[GENDER]","[YEAROFBIRTH]","[MONTHOFBIRTH]","[DAYOFBIRTH]","[ZODIAC]","[AGE]","[HEIGHT]","[WEIGHT]"]} )
     model = GPT2LMHeadModel.from_pretrained(model_path)
     model.to(device)
     model.eval()
@@ -50,21 +51,12 @@ class ChatBot():
 
   def chat(self, history, text, repetition_penalty, temperature, top_k, top_p):
     text_ids = self.tokenizer.encode(text, add_special_tokens=False)
+    history.append(text_ids)
 
     input_ids = [self.tokenizer.cls_token_id]
-    for history_utr in history[-5:]:
+    for history_utr in history[-3:]:
       input_ids.extend(history_utr)
       input_ids.append(self.tokenizer.sep_token_id)
-    input_ids.extend(text_ids)
-    input_ids.append(self.tokenizer.sep_token_id)
-
-    split_text_ids = []
-    for text_id in text_ids:
-      if text_id != self.tokenizer.sep_token_id:
-        split_text_ids.append(text_id)
-      else:
-        break
-    history.append(split_text_ids)
 
     input_ids = torch.tensor(input_ids).to(self.device)
     input_ids = input_ids.unsqueeze(0)
@@ -92,4 +84,4 @@ class ChatBot():
 
     history.append(answer)
 
-    return self.tokenizer.convert_ids_to_tokens(answer), history
+    return Filter.replace( self.tokenizer.convert_ids_to_tokens(answer) ), history

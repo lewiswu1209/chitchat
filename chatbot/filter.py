@@ -1,10 +1,19 @@
 
+from chatbot import config
+
 class Filter():
 
-    exclude_sentence = ["图片评论"]
-
     def filter(text):
-        if text in Filter.exclude_sentence:
+        if text in config.exclude_sentence:
             return True
 
         return False
+
+    def replace(tokens):
+        replaced_tokens = []
+        for token in tokens:
+            for (key, value) in config.bot_information.items():
+                if token == key:
+                    token = value
+            replaced_tokens.append(token)
+        return replaced_tokens
