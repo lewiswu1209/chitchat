@@ -7,6 +7,8 @@ import torch.nn.functional as F
 
 from chatbot.filter import Filter
 
+from chatbot import config
+
 class ChatBot():
 
   def get_chat_bot(model_path, vocab_path = None):
@@ -15,7 +17,11 @@ class ChatBot():
       tokenizer = BertTokenizerFast.from_pretrained(model_path, sep_token="[SEP]", pad_token="[PAD]", cls_token="[CLS]")
     else:
       tokenizer = BertTokenizerFast(vocab_path, sep_token="[SEP]", pad_token="[PAD]", cls_token="[CLS]")
-    tokenizer.add_special_tokens( {'additional_special_tokens':["[NAME]","[NICK]","[GENDER]","[YEAROFBIRTH]","[MONTHOFBIRTH]","[DAYOFBIRTH]","[ZODIAC]","[AGE]","[HEIGHT]","[WEIGHT]"]} )
+    special_tokens = []
+    for key in config.bot_information.keys():
+      special_tokens.append(key)
+    tokenizer.add_special_tokens( {'additional_special_tokens':special_tokens} )
+    # tokenizer.add_special_tokens( {'additional_special_tokens':["[NAME]","[NICK]","[GENDER]","[YEAROFBIRTH]","[MONTHOFBIRTH]","[DAYOFBIRTH]","[ZODIAC]","[AGE]","[HEIGHT]","[WEIGHT]"]} )
     model = GPT2LMHeadModel.from_pretrained(model_path)
     model.to(device)
     model.eval()

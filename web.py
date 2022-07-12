@@ -8,23 +8,23 @@ from datetime import timedelta
 from chatbot.interface import ChatBot
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.urandom(74)
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
+app.config["SECRET_KEY"] = os.urandom(74)
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=7)
 
 bot = None
 
 def set_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--temperature', default=1, type=float, required=False, help='生成的temperature')
-    parser.add_argument('--repetition_penalty', default=1.2, type=float, required=False, help="重复惩罚参数，若生成的对话重复性较高，可适当提高该参数")
-    parser.add_argument('--topk', default=6, type=int, required=False, help='最高k选1')
-    parser.add_argument('--topp', default=0.6, type=float, required=False, help='最高积累概率')
-    parser.add_argument('--vocab_path', default=None, type=str, required=False, help='选择词库')
-    parser.add_argument('--model_path', default='cambridgeltl/simctg_lccc_dialogue', type=str, required=False, help='对话模型路径')
+    parser.add_argument("--temperature", default=1, type=float, required=False, help="生成的temperature")
+    parser.add_argument("--repetition_penalty", default=1.2, type=float, required=False, help="重复惩罚参数，若生成的对话重复性较高，可适当提高该参数")
+    parser.add_argument("--topk", default=6, type=int, required=False, help="最高k选1")
+    parser.add_argument("--topp", default=0.6, type=float, required=False, help="最高积累概率")
+    parser.add_argument("--vocab_path", default=None, type=str, required=False, help="选择词库")
+    parser.add_argument("--model_path", default="cambridgeltl/simctg_lccc_dialogue", type=str, required=False, help="对话模型路径")
 
     return parser.parse_args()
 
-@app.route('/api/history', methods = ['GET'])
+@app.route("/chitchat/history", methods = ["GET"])
 def get_history_list():
   global bot
   history_ids = session.get("history")
@@ -35,8 +35,8 @@ def get_history_list():
       history.append( bot.decode(history_utr) )
   return jsonify(history)
 
-@app.route('/api/chat', methods = ['GET'])
-def chat():
+@app.route("/chitchat/chat", methods = ["GET"])
+def talk():
   global bot
   if request.args.get("text"):
     text = request.args.get("text")
@@ -50,13 +50,13 @@ def chat():
   else:
     return jsonify("")
 
-@app.route('/')
+@app.route("/")
 def index():
   return "Hello world!"
 
-@app.route('/chatroom', methods = ['GET'])
-def chatroom():
-    return render_template("chatroom.html")
+@app.route("/chitchat", methods = ["GET"])
+def chitchat():
+    return render_template("chat_template.html")
 
 if __name__ == "__main__":
   args = set_args()

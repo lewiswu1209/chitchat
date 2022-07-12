@@ -1,6 +1,6 @@
 from tokenizers import BertWordPieceTokenizer
 from transformers import BertTokenizer
-import tokenizer_factory
+from transformers import BertTokenizerFast
 import argparse
 import pandas as pd
 import pickle
@@ -9,6 +9,7 @@ from tqdm import tqdm
 from transformers import GPT2TokenizerFast, GPT2LMHeadModel
 import logging
 import numpy as np
+from chatbot import config
 
 
 def create_logger(log_path):
@@ -54,7 +55,11 @@ def preprocess():
     logger = create_logger(args.log_path)
 
     # 初始化tokenizer
-    tokenizer = tokenizer_factory.get_tokenizer(vocab_file=args.vocab_path, sep_token="[SEP]", pad_token="[PAD]", cls_token="[CLS]")
+    tokenizer = BertTokenizerFast(vocab_file=args.vocab_path, sep_token="[SEP]", pad_token="[PAD]", cls_token="[CLS]")
+    special_tokens = []
+    for key in config.bot_information.keys():
+        special_tokens.append(key)
+    tokenizer.add_special_tokens( {'additional_special_tokens':special_tokens} )
     sep_id = tokenizer.sep_token_id
     cls_id = tokenizer.cls_token_id
     logger.info("preprocessing data,data path:{}, save path:{}".format(args.train_path, args.save_path))
@@ -98,4 +103,3 @@ def preprocess():
 
 if __name__ == '__main__':
     preprocess()
-

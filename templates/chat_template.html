@@ -1,7 +1,7 @@
-<html lang="en">
+<html lang="zh">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>小陪</title>
+    <title>聊天机器人</title>
     <style>
       body {
         padding:0;
@@ -199,14 +199,14 @@
       	chat_thread.appendChild(new_li_label);
       	chat_thread.scrollTop = chat_thread.scrollHeight;
         chat_window_message.value = "";
-        document.title = '小陪 ~ 对方正在输入…'
-        $.getJSON("/api/chat?text="+text, function(data){
+        document.title = "聊天机器人 ~ 对方正在输入…"
+        $.getJSON("/chitchat/chat?text="+text, function(data){
           var new_li_label = document.createElement("li"),new_li_text = document.createTextNode(data);
           new_li_label.appendChild(new_li_text);
           chat_thread.appendChild(new_li_label);
           chat_thread.scrollTop = chat_thread.scrollHeight;
 
-          document.title = '小陪'
+          document.title = "聊天机器人"
           chat_window_message.disabled = false;
         });
       }
@@ -215,8 +215,8 @@
         var chat_thread = document.querySelector(".chat-thread");
         var chat_window_message = document.querySelector(".chat-window-message");
         chat_window_message.disabled = true;
-        document.title = '小陪 ~ 正在回忆…'
-        $.getJSON("/api/history", function(data){
+        document.title = "聊天机器人 ~ 正在回忆…"
+        $.getJSON("/chitchat/history", function(data){
           data.forEach(function(item) {
               var new_li_label = document.createElement("li"),new_li_text = document.createTextNode(item);
               new_li_label.appendChild(new_li_text);
@@ -225,7 +225,7 @@
             chat_thread.scrollTop = chat_thread.scrollHeight;
             
             chat_window_message.disabled = false;
-            document.title = '小陪'
+            document.title = "聊天机器人"
         });
       }
     </script>

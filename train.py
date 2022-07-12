@@ -19,11 +19,12 @@ from pytorchtools import EarlyStopping
 from sklearn.model_selection import train_test_split
 from data_parallel import BalancedDataParallel
 from transformers import GPT2TokenizerFast, GPT2LMHeadModel, GPT2Config
+from transformers import BertTokenizerFast
 import pandas as pd
 import torch.nn.utils.rnn as rnn_utils
 import numpy as np
-import tokenizer_factory
 from dataset import MyDataset
+from chatbot import config
 
 
 def set_args():
@@ -381,7 +382,11 @@ def main():
     logger.info('using device:{}'.format(device))
 
     # 初始化tokenizer
-    tokenizer = tokenizer_factory.get_tokenizer(vocab_file=args.vocab_path, sep_token="[SEP]", pad_token="[PAD]", cls_token="[CLS]")
+    tokenizer = BertTokenizerFast(vocab_file=args.vocab_path, sep_token="[SEP]", pad_token="[PAD]", cls_token="[CLS]")
+    special_tokens = []
+    for key in config.bot_information.keys():
+      special_tokens.append(key)
+    tokenizer.add_special_tokens( {'additional_special_tokens':special_tokens} )
     args.sep_id = tokenizer.sep_token_id
     args.pad_id = tokenizer.pad_token_id
     args.cls_id = tokenizer.cls_token_id
