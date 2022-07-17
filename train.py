@@ -24,7 +24,7 @@ import pandas as pd
 import torch.nn.utils.rnn as rnn_utils
 import numpy as np
 from dataset import MyDataset
-from chatbot import config
+from chatbot.config import config
 
 
 def set_args():
@@ -384,7 +384,7 @@ def main():
     # 初始化tokenizer
     tokenizer = BertTokenizerFast(vocab_file=args.vocab_path, sep_token="[SEP]", pad_token="[PAD]", cls_token="[CLS]")
     special_tokens = []
-    for key in config.bot_information.keys():
+    for key in config["mask_token"].keys():
       special_tokens.append(key)
     tokenizer.add_special_tokens( {'additional_special_tokens':special_tokens} )
     args.sep_id = tokenizer.sep_token_id

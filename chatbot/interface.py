@@ -1,24 +1,19 @@
 
-
 from transformers import BertTokenizerFast, GPT2LMHeadModel
 
 import torch
 import torch.nn.functional as F
 
-from chatbot.filter import Filter
-
-from chatbot import config
-
 class ChatBot():
 
-  def get_chat_bot(model_path, vocab_path = None):
+  def get_chat_bot(model_path, vocab_path = None, filter=None):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     if vocab_path is None:
       tokenizer = BertTokenizerFast.from_pretrained(model_path, sep_token="[SEP]", pad_token="[PAD]", cls_token="[CLS]")
     else:
       tokenizer = BertTokenizerFast(vocab_path, sep_token="[SEP]", pad_token="[PAD]", cls_token="[CLS]")
     special_tokens = []
-    for key in config.bot_information.keys():
+    for key in filter.masked_token.keys():
       special_tokens.append(key)
     tokenizer.add_special_tokens( {'additional_special_tokens':special_tokens} )
     # tokenizer.add_special_tokens( {'additional_special_tokens':["[NAME]","[NICK]","[GENDER]","[YEAROFBIRTH]","[MONTHOFBIRTH]","[DAYOFBIRTH]","[ZODIAC]","[AGE]","[HEIGHT]","[WEIGHT]"]} )
@@ -26,12 +21,13 @@ class ChatBot():
     model.to(device)
     model.eval()
 
-    return ChatBot(tokenizer, model)
+    return ChatBot(tokenizer, model, filter)
 
-  def __init__(self, tokenizer, model):
+  def __init__(self, tokenizer, model, filter):
     self.device = "cuda" if torch.cuda.is_available() else "cpu"
     self.tokenizer = tokenizer
     self.model = model
+    self.filter = filter
 
   def __top_k_top_p_filtering(self, logits, top_k=0, top_p=0.0, filter_value=-float('Inf')):
     assert logits.dim() == 1
@@ -67,8 +63,8 @@ class ChatBot():
     input_ids = torch.tensor(input_ids).to(self.device)
     input_ids = input_ids.unsqueeze(0)
 
-    answer = []
     while True:
+      answer = []
       for _ in range(25):
         output = self.model(input_ids)
 
@@ -85,9 +81,15 @@ class ChatBot():
         input_ids = torch.cat((input_ids, next_token.unsqueeze(0)), dim=1)
         answer.append(next_token.item())
 
-      if not Filter.filter(answer):
-        break
+      if not self.filter is None:
+        if not self.filter.filter(answer):
+          break
 
     history.append(answer)
 
-    return Filter.replace( self.tokenizer.convert_ids_to_tokens(answer) ), history
+    if not self.filter is None:
+      replaced_answer = self.filter.replace( self.tokenizer.convert_ids_to_tokens(answer) )
+    else:
+      replaced_answer = self.tokenizer.convert_ids_to_tokens(answer)
+
+    return replaced_answer, history

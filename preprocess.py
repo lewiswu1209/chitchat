@@ -9,7 +9,7 @@ from tqdm import tqdm
 from transformers import GPT2TokenizerFast, GPT2LMHeadModel
 import logging
 import numpy as np
-from chatbot import config
+from chatbot.config import config
 
 
 def create_logger(log_path):
@@ -57,7 +57,7 @@ def preprocess():
     # 初始化tokenizer
     tokenizer = BertTokenizerFast(vocab_file=args.vocab_path, sep_token="[SEP]", pad_token="[PAD]", cls_token="[CLS]")
     special_tokens = []
-    for key in config.bot_information.keys():
+    for key in config["mask_token"].keys():
         special_tokens.append(key)
     tokenizer.add_special_tokens( {'additional_special_tokens':special_tokens} )
     sep_id = tokenizer.sep_token_id

@@ -6,11 +6,14 @@ from flask import Flask, session, request, jsonify, render_template
 from datetime import timedelta
 
 from chatbot.interface import ChatBot
+from chatbot.filter import Filter
+from chatbot.config import config
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.urandom(74)
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=7)
 
+bot_filter = None
 bot = None
 
 def set_args():
@@ -37,14 +40,16 @@ def get_history_list():
 
 @app.route("/chitchat/chat", methods = ["GET"])
 def talk():
+  global bot_filter
   global bot
+
   if request.args.get("text"):
     text = request.args.get("text")
     history = session.get("history")
     if history is None:
         history = []
-    req, history = bot.chat(history, text, args.repetition_penalty, args.temperature, args.topk, args.topp)
-    text = "".join( req )
+    res, history = bot.chat(history, text, args.repetition_penalty, args.temperature, args.topk, args.topp)
+    text = "".join( res )
     session["history"] = history
     return jsonify(text)
   else:
@@ -60,6 +65,13 @@ def chitchat():
 
 if __name__ == "__main__":
   args = set_args()
+  if bot_filter is None:
+      bot_filter = Filter.get_filter()
+      for sentence in config["exclude_sentence"]:
+          bot_filter.add_exclude_sentence(sentence)
+      for key, value in config["mask_token"].items():
+          bot_filter.add_mask_token(key, value)
 
-  bot = ChatBot.get_chat_bot(args.model_path, args.vocab_path)
+  if bot is None:
+      bot = ChatBot.get_chat_bot(args.model_path, None, bot_filter)
   app.run(host="127.0.0.1", port=8080)
